@@ -20,7 +20,13 @@ export async function POST(request: Request) {
     return Response.json({ error: result.error }, { status: 400 });
   }
 
-  const origin = new URL(request.url).origin;
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const host = forwardedHost ?? request.headers.get("host");
+  const proto =
+    request.headers.get("x-forwarded-proto") ??
+    new URL(request.url).protocol.replace(":", "");
+  const origin = host ? `${proto}://${host}` : new URL(request.url).origin;
+
   return Response.json(
     {
       code: result.code,
